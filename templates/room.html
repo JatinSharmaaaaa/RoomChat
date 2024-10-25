@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ room.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .container {
+        padding: 0 1rem; /* Add some padding to the container */
+    }
+    .abc{
+        display: flex;
+        flex-direction: column;
+    }
+    /* Chat Messages Container */
+    .chat-messages-container {
+        width: 70%; /* Set width to 70% */
+        max-width: 800px; /* Optional: Set a max-width for larger screens */
+        margin: 0 auto; /* Center the container */
+        padding: 1rem; /* Add padding for spacing */
+        background-color: #ffffff; /* White background */
+        border-radius: 0.5rem; /* Rounded corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slight shadow */
+        overflow-y: auto; /* Allow vertical scrolling */
+        border: 1px solid #e5e7eb; /* Light gray border */
+        margin-bottom: 1rem; /* Space below the chat messages */
+    }
+    
+    /* Style for individual messages */
+    .chat-messages-container div {
+        padding: 0.5rem; /* Add padding for message spacing */
+        transition: background-color 0.2s ease; /* Transition for hover effect */
+    }
+    
+    .chat-messages-container div:hover {
+        background-color: #f1f5f9; /* Light gray background on hover */
+    }
+    .xyz{
+        width: 60%;
+    }
+    /* Style for usernames */
+    strong {
+        color: #3b82f6; /* Blue color for usernames */
+        font-weight: 600; /* Make username bold */
+    }
+    
+    /* Style for message content */
+    span {
+        color: #374151; /* Dark gray color for message content */
+        font-weight: 400; /* Regular weight for message content */
+    }
+    
+    /* Input Field Styling */
+    #chat-message-input {
+        width: 70%; /* Set input width to 70% */
+        max-width: 800px; /* Optional: Set a max-width for larger screens */
+        padding: 0.5rem; /* Padding inside the input */
+        border: 1px solid #d1d5db; /* Light gray border */
+        border-radius: 0.5rem 0 0 0.5rem; /* Rounded corners on left side */
+        margin-right: -1px; /* To align with the button */
+        transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Smooth transition */
+    }
+    
+    #chat-message-input:focus {
+        border-color: #3b82f6; /* Change border color on focus */
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); /* Blue shadow */
+    }
+    
+    /* Button Styling */
+    button {
+        width: 30%; /* Set button width to fill the remaining space */
+        padding: 0.5rem; /* Padding for the button */
+        background-color: #3b82f6; /* Blue background */
+        color: white; /* White text */
+        border: none; /* Remove default border */
+        border-radius: 0 0.5rem 0.5rem 0; /* Rounded corners on right side */
+        transition: background-color 0.2s ease; /* Smooth transition for button */
+    }
+    
+    button:hover {
+        background-color: #2563eb; /* Darker blue on hover */
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 600px) {
+        .chat-messages-container,
+        #chat-message-input,
+        button {
+            width: 100%; /* Make elements full width on small screens */
+            max-width: none; /* Remove max-width on small screens */
+        }
+    
+        button {
+            margin-top: 0.5rem; /* Add space above button on small screens */
+        }
+    }
+    
+    
+</style>
+<div class="container mx-auto mt-8 abc">
+    <h1 class="text-4xl font-bold mb-6 text-center text-gray-800">{{ room.name }}</h1>
+    <div id="chat-messages" class="chat-messages-container">
+        {% for message in messages %}
+            <div class="mb-2">
+                <strong class="text-blue-600">{{ message.user.username }}:</strong> <span class="text-gray-700">{{ message.content }}</span>
+            </div>
+        {% endfor %}
+    </div>
+    <form id="chat-form" class="flex xyz">
+        <input type="text" id="chat-message-input" placeholder="Type your message..." />
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+
+<script>
+    const roomId = {{ room.id }};
+    const userId = {{ request.user.id }};
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/chat/' + roomId + '/'
+    );
+
+    const messagesDiv = document.querySelector('#chat-messages');
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messageElement = document.createElement('div');
+        messageElement.innerHTML = '<strong>' + data.username + ':</strong> ' + data.message;
+        messageElement.classList.add('mb-2');
+        messagesDiv.appendChild(messageElement);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    };
+
+    document.querySelector('#chat-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+    
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'user_id': userId,
+            'room_name': roomId  // Send room ID as room_name
+        }));
+    
+        messageInputDom.value = '';
+    });
+    
+</script>
+{% endblock %}

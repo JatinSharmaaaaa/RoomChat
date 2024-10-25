@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Django Chatbot{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<style>
+    /* Body background */
+body {
+    background-color: #f7fafc; /* Light gray background for contrast */
+}
+
+/* Navbar styling */
+nav {
+    background-color: #3b82f6; /* Blue background */
+    padding: 1rem; /* Padding around the navbar */
+}
+
+/* Container styling */
+.container {
+    max-width: 1200px; /* Max width for the navbar */
+    margin: 0 auto; /* Center the container */
+    display: flex; /* Flexbox layout for inline items */
+    justify-content: space-between; /* Space between items */
+    align-items: center; /* Center items vertically */
+}
+
+/* Navbar link styling */
+nav a {
+    color: white; /* White text for links */
+    font-weight: bold; /* Bold text for links */
+    text-decoration: none; /* Remove underline */
+    margin: 0 1rem; /* Margin between links */
+    transition: color 0.3s; /* Smooth color transition */
+}
+
+/* Hover effect for links */
+nav a:hover {
+    color: #e0f2fe; /* Light blue on hover */
+}
+
+/* Logout button styling */
+nav form {
+    display: inline; /* Ensure form is inline */
+}
+
+nav button {
+    background-color: transparent; /* No background */
+    color: white; /* White text */
+    border: none; /* Remove border */
+    font-weight: bold; /* Bold text */
+    cursor: pointer; /* Pointer cursor */
+    transition: color 0.3s; /* Smooth color transition */
+}
+
+/* Logout button hover effect */
+nav button:hover {
+    color: #e0f2fe; /* Light blue on hover */
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .container {
+        flex-direction: column; /* Stack items vertically on small screens */
+        align-items: flex-start; /* Align items to the left */
+    }
+
+    nav a {
+        margin: 0.5rem 0; /* Adjust margin for stacked items */
+    }
+}
+
+</style>
+<body class="bg-gray-100">
+    <nav class="bg-blue-500 p-4 text-white">
+        <div class="container mx-auto flex justify-between">
+            <a href="{% url 'dashboard' %}" class="font-bold">Django Chatbot</a>
+            <div>
+                {% if user.is_authenticated %}
+                    <span class="mr-4">Welcome, {{ user.username }}</span>
+                    <form action="{% url 'logout' %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit">Logout</button>
+                    </form>
+                    
+                    {% comment %} <a href="{% url 'logout' %}" class="hover:underline">Logout</a> {% endcomment %}
+                {% else %}
+                    <a href="{% url 'login' %}" class="hover:underline">Login</a>
+                    <a href="{% url 'register' %}" class="ml-4 hover:underline">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto mt-8 px-4">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
